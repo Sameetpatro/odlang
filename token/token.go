@@ -2,32 +2,34 @@ package token
 
 type TokenType string
 
-type Token struct{
-	Type TokenType
-	Literal string
+type Token struct {
+    Type    TokenType
+    Literal string
 }
 
 const (
-	ILLEGAL = "ILLEGAL"
-	EOF     = "EOF"
+    ILLEGAL = "ILLEGAL"
+    EOF     = "EOF"
 
-	IDENT  = "IDENT"
-	STRING = "STRING"
+    IDENT  = "IDENT"
+    STRING = "STRING"
+    INT    = "INT"
 
-	LPAREN = "("
-	RPAREN = ")"
+    LPAREN    = "("
+    RPAREN    = ")"
+    SEMICOLON = ";"
 
-	LEKHA = "LEKHA"
+    LEKHA = "LEKHA"
 )
 
 var keywords = map[string]TokenType{
-	"lekha" : LEKHA,
+    "lekha": LEKHA,
 }
 
-func LookupIdent(ident string) TokenType{
-	tok, ok := keywords[ident]
-	if ok {
-		return tok
-	}
-	return IDENT
+// aeita check kare ki the next word gote identifier ki nahi, if identifier then aeita se identifier return kare
+func LookupIdent(ident string) TokenType {
+    if tok, ok := keywords[ident]; ok {
+        return tok
+    }
+    return IDENT
 }
