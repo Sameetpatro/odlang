@@ -32,3 +32,16 @@ func (l *Lexer) Debug() {
     fmt.Printf("readPosition=%d\n", l.readpos)
     fmt.Printf("ch=%c\n", l.ch)
 }
+
+func (l *Lexer) peekChar() byte {
+	if l.readpos >= len(l.input){
+		return 0
+	}
+	return l.input[l.readpos]
+}
+
+func (l *Lexer) skipWhitespaces(){
+	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
+		l.readChar()
+	}
+}
