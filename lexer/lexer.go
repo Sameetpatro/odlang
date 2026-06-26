@@ -168,8 +168,10 @@ func (lexer *Lexer) NextToken() token.Token {
 		tok = newToken(token.COMMA, lexer.currentChar)
 	case '"':
 		tok = token.Token{Type: token.STRING, Literal: lexer.readString()}
+		return tok
 	case '\'':
 		tok = token.Token{Type: token.CHAR, Literal: lexer.readChar_literal()}
+		return tok
 	case '!':
 		if lexer.peekChar() == '=' {
 			ch := lexer.currentChar
