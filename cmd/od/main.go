@@ -3,8 +3,10 @@ package main
 import (
     "fmt"
     "os"
+
+    "github.com/Sameetpatro/odlang/interpreter"
     "github.com/Sameetpatro/odlang/lexer"
-    "github.com/Sameetpatro/odlang/token"
+    "github.com/Sameetpatro/odlang/parser"
 )
 
 func main() {
@@ -20,12 +22,16 @@ func main() {
     }
 
     l := lexer.New(string(src))
+    p := parser.New(l)
+    program := p.ParseProgram()
 
-    for {
-        tok := l.NextToken()
-        fmt.Printf("%-10s %q\n", tok.Type, tok.Literal)
-        if tok.Type == token.EOF {
-            break
+    // Print parser errors and exit if any
+    if len(p.Errors()) > 0 {
+        for _, e := range p.Errors() {
+            fmt.Println("parse error:", e)
         }
+        os.Exit(1)
     }
+
+    interpreter.Eval(program)
 }
