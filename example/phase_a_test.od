@@ -1,0 +1,85 @@
+anaa fmt |
+
+const PI = 3.14159 |
+const MAX = 100 |
+
+karya misana (pratham sankhya, dutiya sankhya) (sankhya, sankhya, sankhya) {
+    deide (pratham + dutiya, pratham, dutiya) |
+}
+
+karya lekhaSabda (mula sabda) (sabda) {
+    deide (mula + " from misana") |
+}
+
+karya aarambha() {
+    lekha("=== OdLang Lexer Smoke Test ===") |
+
+    sankhya p |
+    sankhya q |
+    lekha("enter two numbers:") |
+    dia(p >> q) |
+
+    sankhya s |
+    sabda msg |
+    s, p, q = misana(p, q) |
+    msg = lekhaSabda("sum is " + sabda(s)) |
+
+    lekha(msg) |
+    lekha("p =", p, "q =", q, "s =", s) |
+
+    jadi s > MAX {
+        lekha("bada sankhya") |
+    } nahele jadi s == MAX {
+        lekha("sata") |
+    } nahele {
+        lekha("chota sankhya") |
+    }
+
+    satya flag = han |
+    satya other = na |
+    jadi flag sahita !other {
+        lekha("flag is true and other is not false") |
+    } nahele jadi flag aau other {
+        lekha("at least one is true") |
+    } nahele {
+        lekha("both are false") |
+    }
+
+    ghura sankhya i = 0 -> 5 | i++ {
+        jadi i == 3 {
+            chadide |
+        } |
+        lekha("loop:", i) |
+    }
+
+    sankhya x = 10 |
+    jetebeleJain x > 0 {
+        lekha("countdown:", x) |
+        x = x - 1 |
+        jadi x == 5 {
+            baharipade |
+        } |
+    }
+
+    dasmik ratio = PI / 2.0 |
+    akshara mark = '!' |
+    nua extra = khali |
+    lekha("ratio =", ratio, "mark =", mark, "extra =", extra) |
+
+    krama nums(5, 0) |
+    nums[0] = 1 |
+    nums[1] = 2 |
+    lekha("first cell:", nums[0], "power:", 2**3) |
+
+    sabda casted = sabda(s) |
+    lekha("casted sum:", casted) |
+
+    chesta {
+        lekha("try block ok") |
+        sankhya bad = 10 / 0 |
+    } dhare {
+        lekha("catch block ran") |
+    }
+
+    lekha("=== done ===") |
+}

@@ -1,113 +1,232 @@
 package lexer
 
 import (
-    "fmt"
-    "github.com/Sameetpatro/odlang/token"
+	"github.com/Sameetpatro/odlang/token"
 )
 
+// Lexer reads the source code one character at a time.
+// It turns raw text into tokens that the parser can understand.
+// Example: "lekha("hi")" becomes [LEKHA, LPAREN, STRING("hi"), RPAREN]
 type Lexer struct {
-    input    string
-    position int  
-    readpos  int  
-    ch       byte 
+	input        string
+	position     int
+	readPosition int
+	currentChar  byte
 }
 
+// New creates a lexer ready to read the given source code.
+// Example: New("lekha(1)") returns a lexer at the first character 'l'
 func New(input string) *Lexer {
-    l := &Lexer{input: input}
-    l.readChar()
-    return l
+	lexer := &Lexer{input: input}
+	lexer.readChar()
+	return lexer
 }
 
-func (l *Lexer) readChar() {
-    if l.readpos >= len(l.input) {
-        l.ch = 0 // 0 means EOF, same as ASCII NUL
-    } else {
-        l.ch = l.input[l.readpos]
-    }
-    l.position = l.readpos
-    l.readpos++
+// readChar moves to the next character in the input string.
+// Example: after readChar on "abc", currentChar becomes 'b'
+func (lexer *Lexer) readChar() {
+	if lexer.readPosition >= len(lexer.input) {
+		lexer.currentChar = 0
+	} else {
+		lexer.currentChar = lexer.input[lexer.readPosition]
+	}
+	lexer.position = lexer.readPosition
+	lexer.readPosition++
 }
 
-//peekchar next position check kariki kuhe agaku kn achi 
-func (l *Lexer) peekChar() byte {
-    if l.readpos >= len(l.input) {
-        return 0
-    }
-    return l.input[l.readpos]
+// peekChar looks at the next character without moving forward.
+// Example: if input is "10", currentChar is '1' and peekChar returns '0'
+func (lexer *Lexer) peekChar() byte {
+	if lexer.readPosition >= len(lexer.input) {
+		return 0
+	}
+	return lexer.input[lexer.readPosition]
 }
 
-func (l *Lexer) skipWhitespace() {
-    for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
-        l.readChar()
-    }
+// skipWhitespace moves past spaces, tabs, and newlines.
+// Example: "  lekha" becomes "lekha" after skipWhitespace
+func (lexer *Lexer) skipWhitespace() {
+	for lexer.currentChar == ' ' || lexer.currentChar == '\t' ||
+		lexer.currentChar == '\n' || lexer.currentChar == '\r' {
+		lexer.readChar()
+	}
 }
 
-//aeita sabu valid identifiers check kariki kuhe and also includes _
+// readIdentifier reads a word made of letters and underscores.
+// Example: "aarambha" in karya aarambha() is read as one identifier
+func (lexer *Lexer) readIdentifier() string {
+	start := lexer.position
+	for isLetter(lexer.currentChar) {
+		lexer.readChar()
+	}
+	return lexer.input[start:lexer.position]
+}
+
+// readNumber reads a whole number without a decimal point.
+// Example: "10" in x = 10 | is read as the string "10"
+func (lexer *Lexer) readNumber() string {
+	start := lexer.position
+	for isDigit(lexer.currentChar) {
+		lexer.readChar()
+	}
+	return lexer.input[start:lexer.position]
+}
+
+// readFloat reads a number that has a dot in the middle.
+// Example: "3.14" in const PI = 3.14 is read as the string "3.14"
+func (lexer *Lexer) readFloat() string {
+	start := lexer.position
+	for isDigit(lexer.currentChar) || lexer.currentChar == '.' {
+		lexer.readChar()
+	}
+	return lexer.input[start:lexer.position]
+}
+
+// readString reads text inside double quotes.
+// Example: "hello" in lekha("hello") returns hello without the quotes
+func (lexer *Lexer) readString() string {
+	lexer.readChar()
+	start := lexer.position
+	for lexer.currentChar != '"' && lexer.currentChar != 0 {
+		lexer.readChar()
+	}
+	literal := lexer.input[start:lexer.position]
+	lexer.readChar()
+	return literal
+}
+
+// readChar_literal reads one character inside single quotes.
+// Example: 'a' in akshara c = 'a' returns the character a without quotes
+func (lexer *Lexer) readChar_literal() string {
+	lexer.readChar()
+	start := lexer.position
+	for lexer.currentChar != '\'' && lexer.currentChar != 0 {
+		lexer.readChar()
+	}
+	literal := lexer.input[start:lexer.position]
+	lexer.readChar()
+	return literal
+}
+
+// isLetter checks if a character can start or continue an identifier.
+// Example: isLetter('a') is true, isLetter('5') is false
 func isLetter(ch byte) bool {
-    return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_'
+	return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_'
 }
 
-// readIdentifier slices directly from the input string — no allocations.
-// l.input[start:l.position] gives us the identifier without copying bytes.
-func (l *Lexer) readIdentifier() string {
-    start := l.position
-    for isLetter(l.ch) {
-        l.readChar()
-    }
-    return l.input[start:l.position]
+// isDigit checks if a character is a number digit.
+// Example: isDigit('7') is true, isDigit('x') is false
+func isDigit(ch byte) bool {
+	return ch >= '0' && ch <= '9'
 }
 
-//aeita string read kare until " "" " or EOF
-//jo string ase seita is without quotes
-func (l *Lexer) readString() string {
-    l.readChar() // skip opening "
-    start := l.position
-    for l.ch != '"' && l.ch != 0 {
-        l.readChar()
-    }
-    str := l.input[start:l.position]
-    l.readChar() // skip closing "
-    return str
+// NextToken returns the next token from the source code.
+// Example: "lekha(x) |" returns LEKHA, then LPAREN, then IDENT "x", etc.
+func (lexer *Lexer) NextToken() token.Token {
+	lexer.skipWhitespace()
+
+	var tok token.Token
+
+	switch lexer.currentChar {
+	case '(':
+		tok = newToken(token.LPAREN, lexer.currentChar)
+	case ')':
+		tok = newToken(token.RPAREN, lexer.currentChar)
+	case '{':
+		tok = newToken(token.LBRACE, lexer.currentChar)
+	case '}':
+		tok = newToken(token.RBRACE, lexer.currentChar)
+	case '[':
+		tok = newToken(token.LBRACK, lexer.currentChar)
+	case ']':
+		tok = newToken(token.RBRACK, lexer.currentChar)
+	case '|':
+		tok = newToken(token.PIPE, lexer.currentChar)
+	case '+':
+		tok = newToken(token.PLUS, lexer.currentChar)
+	case '-':
+		tok = newToken(token.MINUS, lexer.currentChar)
+	case '/':
+		tok = newToken(token.SLASH, lexer.currentChar)
+	case ',':
+		tok = newToken(token.COMMA, lexer.currentChar)
+	case '"':
+		tok = token.Token{Type: token.STRING, Literal: lexer.readString()}
+	case '\'':
+		tok = token.Token{Type: token.CHAR, Literal: lexer.readChar_literal()}
+	case '!':
+		if lexer.peekChar() == '=' {
+			ch := lexer.currentChar
+			lexer.readChar()
+			tok = token.Token{Type: token.NOT_EQ, Literal: string(ch) + string(lexer.currentChar)}
+		} else {
+			tok = newToken(token.BANG, lexer.currentChar)
+		}
+	case '>':
+		if lexer.peekChar() == '=' {
+			ch := lexer.currentChar
+			lexer.readChar()
+			tok = token.Token{Type: token.GTE, Literal: string(ch) + string(lexer.currentChar)}
+		} else if lexer.peekChar() == '>' {
+			ch := lexer.currentChar
+			lexer.readChar()
+			tok = token.Token{Type: token.RSHIFT, Literal: string(ch) + string(lexer.currentChar)}
+		} else {
+			tok = newToken(token.GT, lexer.currentChar)
+		}
+	case '<':
+		if lexer.peekChar() == '=' {
+			ch := lexer.currentChar
+			lexer.readChar()
+			tok = token.Token{Type: token.LTE, Literal: string(ch) + string(lexer.currentChar)}
+		} else {
+			tok = newToken(token.LT, lexer.currentChar)
+		}
+	case '=':
+		if lexer.peekChar() == '=' {
+			ch := lexer.currentChar
+			lexer.readChar()
+			tok = token.Token{Type: token.EQ, Literal: string(ch) + string(lexer.currentChar)}
+		} else {
+			tok = newToken(token.ASSIGN, lexer.currentChar)
+		}
+	case '*':
+		if lexer.peekChar() == '*' {
+			ch := lexer.currentChar
+			lexer.readChar()
+			tok = token.Token{Type: token.EXP, Literal: string(ch) + string(lexer.currentChar)}
+		} else {
+			tok = newToken(token.STAR, lexer.currentChar)
+		}
+	case 0:
+		tok.Literal = ""
+		tok.Type = token.EOF
+	default:
+		if isLetter(lexer.currentChar) {
+			literal := lexer.readIdentifier()
+			tok.Type = token.LookupIdent(literal)
+			tok.Literal = literal
+			return tok
+		} else if isDigit(lexer.currentChar) {
+			if lexer.peekChar() == '.' {
+				literal := lexer.readFloat()
+				tok = token.Token{Type: token.FLOAT, Literal: literal}
+			} else {
+				literal := lexer.readNumber()
+				tok = token.Token{Type: token.INT, Literal: literal}
+			}
+			return tok
+		} else {
+			tok = newToken(token.ILLEGAL, lexer.currentChar)
+		}
+	}
+
+	lexer.readChar()
+	return tok
 }
 
-// NextToken is the heart of the lexer.
-// It skips whitespace, looks at the current character, and returns the next token.
-// IMPORTANT: for single-char tokens, we build the token THEN call readChar().
-// For multi-char tokens, readIdentifier/readString already advance internally.
-func (l *Lexer) NextToken() token.Token {
-    l.skipWhitespace()
-
-    var tok token.Token
-
-    switch l.ch {
-    case '(':
-        tok = token.Token{Type: token.LPAREN, Literal: "("}
-        l.readChar()
-    case ')':
-        tok = token.Token{Type: token.RPAREN, Literal: ")"}
-        l.readChar()
-    case '"':
-        tok = token.Token{Type: token.STRING, Literal: l.readString()}
-    case 0:
-        tok = token.Token{Type: token.EOF, Literal: ""}
-    default:
-        if isLetter(l.ch) {
-            literal := l.readIdentifier()
-            // LookupIdent distinguishes keywords like 'lekha' from plain identifiers
-            tok = token.Token{Type: token.LookupIdent(literal), Literal: literal}
-        } else {
-            // Anything we don't recognise becomes ILLEGAL
-            tok = token.Token{Type: token.ILLEGAL, Literal: string(l.ch)}
-            l.readChar()
-        }
-    }
-
-    return tok
-}
-
-func (l *Lexer) Debug() {
-    fmt.Printf("input=%s\n", l.input)
-    fmt.Printf("position=%d\n", l.position)
-    fmt.Printf("readPosition=%d\n", l.readpos)
-    fmt.Printf("ch=%c\n", l.ch)
+// newToken builds a token from a type and one character.
+// Example: newToken(token.PLUS, '+') gives {Type: "+", Literal: "+"}
+func newToken(tokenType token.TokenType, ch byte) token.Token {
+	return token.Token{Type: tokenType, Literal: string(ch)}
 }
