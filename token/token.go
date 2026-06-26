@@ -128,6 +128,18 @@ const (
 	// Example: misana(a, b) uses COMMA between arguments
 	COMMA = "COMMA"
 
+	// ARROW is the range operator used in ghura loops.
+	// Example: ghura sankhya i = 0 -> 5 uses ARROW between start and end
+	ARROW = "ARROW"
+
+	// INCREMENT adds one to a loop variable after each step.
+	// Example: i++ after ghura ... | i++ { increases i by 1
+	INCREMENT = "INCREMENT"
+
+	// DECREMENT subtracts one from a variable after each step.
+	// Example: i-- lowers i by 1 each time
+	DECREMENT = "DECREMENT"
+
 	// LEKHA is the print keyword
 	// Example: lekha("hi") prints hi
 	LEKHA = "LEKHA"

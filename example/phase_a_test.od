@@ -25,7 +25,7 @@ karya aarambha() {
     msg = lekhaSabda("sum is " + sabda(s)) |
 
     lekha(msg) |
-    lekha("p =", p, "q =", q, "s =", s) |
+    lekha("p = " + sabda(p) + " q = " + sabda(q) + " s = " + sabda(s)) |
 
     jadi s > MAX {
         lekha("bada sankhya") |
@@ -49,12 +49,12 @@ karya aarambha() {
         jadi i == 3 {
             chadide |
         } |
-        lekha("loop:", i) |
+        lekha("loop: " + sabda(i)) |
     }
 
     sankhya x = 10 |
     jetebeleJain x > 0 {
-        lekha("countdown:", x) |
+        lekha("countdown: " + sabda(x)) |
         x = x - 1 |
         jadi x == 5 {
             baharipade |
@@ -64,15 +64,15 @@ karya aarambha() {
     dasmik ratio = PI / 2.0 |
     akshara mark = '!' |
     nua extra = khali |
-    lekha("ratio =", ratio, "mark =", mark, "extra =", extra) |
+    lekha("ratio = " + sabda(ratio) + " mark = " + sabda(mark) + " extra = " + sabda(extra)) |
 
     krama nums(5, 0) |
     nums[0] = 1 |
     nums[1] = 2 |
-    lekha("first cell:", nums[0], "power:", 2**3) |
+    lekha("first cell: " + sabda(nums[0]) + " power: " + sabda(2**3)) |
 
     sabda casted = sabda(s) |
-    lekha("casted sum:", casted) |
+    lekha("casted sum: " + casted) |
 
     chesta {
         lekha("try block ok") |

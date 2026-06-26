@@ -143,9 +143,25 @@ func (lexer *Lexer) NextToken() token.Token {
 	case '|':
 		tok = newToken(token.PIPE, lexer.currentChar)
 	case '+':
-		tok = newToken(token.PLUS, lexer.currentChar)
+		if lexer.peekChar() == '+' {
+			ch := lexer.currentChar
+			lexer.readChar()
+			tok = token.Token{Type: token.INCREMENT, Literal: string(ch) + string(lexer.currentChar)}
+		} else {
+			tok = newToken(token.PLUS, lexer.currentChar)
+		}
 	case '-':
-		tok = newToken(token.MINUS, lexer.currentChar)
+		if lexer.peekChar() == '>' {
+			ch := lexer.currentChar
+			lexer.readChar()
+			tok = token.Token{Type: token.ARROW, Literal: string(ch) + string(lexer.currentChar)}
+		} else if lexer.peekChar() == '-' {
+			ch := lexer.currentChar
+			lexer.readChar()
+			tok = token.Token{Type: token.DECREMENT, Literal: string(ch) + string(lexer.currentChar)}
+		} else {
+			tok = newToken(token.MINUS, lexer.currentChar)
+		}
 	case '/':
 		tok = newToken(token.SLASH, lexer.currentChar)
 	case ',':
