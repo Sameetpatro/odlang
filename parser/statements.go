@@ -135,24 +135,17 @@ func (parser *Parser) parseDeideStatement() *ast.DeideStatement {
 	return &ast.DeideStatement{Values: parser.parseExpressionList(token.RPAREN)}
 }
 
-// parseAnaaStatement reads anaa moduleName |
-// Example: anaa fmt | stores Path "fmt"
-func (parser *Parser) parseAnaaStatement() *ast.AnaaStatement {
-	statement := &ast.AnaaStatement{}
-	parser.nextToken()
-	statement.Path = parser.currentToken.Literal
-	return statement
-}
-
 // parseBaharipadeStatement reads baharipade |
 // Example: baharipade | inside a loop becomes BaharipadeStatement
 func (parser *Parser) parseBaharipadeStatement() *ast.BaharipadeStatement {
+	parser.nextToken()
 	return &ast.BaharipadeStatement{}
 }
 
 // parseChadideStatement reads chadide |
 // Example: chadide | skips to the next loop step
 func (parser *Parser) parseChadideStatement() *ast.ChadideStatement {
+	parser.nextToken()
 	return &ast.ChadideStatement{}
 }
 

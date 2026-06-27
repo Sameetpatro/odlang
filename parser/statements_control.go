@@ -68,7 +68,10 @@ func (parser *Parser) parseGhuraStatement() *ast.GhuraStatement {
 	}
 	parser.nextToken()
 	statement.End = parser.parseExpression(lowestPrecedence)
-	if parser.currentToken.Type == token.PIPE {
+	if parser.peekToken.Type == token.PIPE {
+		parser.nextToken()
+		parser.nextToken()
+	} else if parser.currentToken.Type == token.PIPE {
 		parser.nextToken()
 	}
 	stepName := parser.currentToken.Literal

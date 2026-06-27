@@ -1,4 +1,4 @@
-karya aarambha(){
+karya aarambha() () {
     lekha("jai jagannath") |
     lekha("hi") |
 }

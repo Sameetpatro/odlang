@@ -1,5 +1,3 @@
-anaa fmt |
-
 const PI = 3.14159 |
 const MAX = 100 |
 
@@ -11,7 +9,7 @@ karya lekhaSabda (mula sabda) (sabda) {
     deide (mula + " from misana") |
 }
 
-karya aarambha() {
+karya aarambha() () {
     lekha("=== OdLang Lexer Smoke Test ===") |
 
     sankhya p |

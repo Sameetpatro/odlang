@@ -73,8 +73,6 @@ func (parser *Parser) parseStatement() ast.Statement {
 		return parser.parseKaryaStatement()
 	case token.CHESTA:
 		return parser.parseChestaStatement()
-	case token.ANAA:
-		return parser.parseAnaaStatement()
 	case token.BAHARIPADE:
 		return parser.parseBaharipadeStatement()
 	case token.CHADIDE:
@@ -133,7 +131,7 @@ func (parser *Parser) peekError(tokenType token.TokenType) {
 func (parser *Parser) isStatementStart(tokenType token.TokenType) bool {
 	switch tokenType {
 	case token.LEKHA, token.DIA, token.DEIDE, token.JADI, token.GHURA, token.JETEBELEJAIN,
-		token.KARYA, token.CHESTA, token.ANAA, token.BAHARIPADE, token.CHADIDE,
+		token.KARYA, token.CHESTA, token.BAHARIPADE, token.CHADIDE,
 		token.CONST, token.NUA, token.IDENT,
 		token.SANKHYA, token.SABDA, token.AKSHARA, token.DASMIC, token.SATYA,
 		token.KRAMA, token.MANA, token.THAKA, token.DHADHI:
@@ -146,6 +144,10 @@ func (parser *Parser) isStatementStart(tokenType token.TokenType) bool {
 // syncAfterTopLevelStatement moves past a line end at the top level of a file.
 // Example: after karya f() { } the next token is KARYA and must not be skipped
 func (parser *Parser) syncAfterTopLevelStatement() {
+	if parser.peekToken.Type == token.PIPE || parser.currentToken.Type == token.PIPE {
+		parser.consumeStatementEnd()
+		return
+	}
 	if parser.isStatementStart(parser.currentToken.Type) {
 		return
 	}
@@ -182,11 +184,17 @@ func (parser *Parser) consumeStatementEnd() {
 func (parser *Parser) parseBlock() []ast.Statement {
 	var statements []ast.Statement
 	for parser.currentToken.Type != token.RBRACE && parser.currentToken.Type != token.EOF {
+		tokenBefore := parser.currentToken
 		statement := parser.parseStatement()
 		if statement != nil {
 			statements = append(statements, statement)
 		}
 		parser.syncAfterBlockStatement()
+		if parser.currentToken == tokenBefore &&
+			parser.currentToken.Type != token.EOF &&
+			parser.currentToken.Type != token.RBRACE {
+			parser.nextToken()
+		}
 	}
 	return statements
 }

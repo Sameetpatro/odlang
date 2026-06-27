@@ -12,6 +12,8 @@ import (
 	"github.com/Sameetpatro/odlang/ast"
 )
 
+var stdinScanner = bufio.NewScanner(os.Stdin)
+
 type Environment struct {
 	store map[string]interface{}
 	types map[string]string
@@ -19,10 +21,12 @@ type Environment struct {
 }
 
 func NewEnvironment() *Environment {
-	return &Environment{
+	env := &Environment{
 		store: make(map[string]interface{}),
 		types: make(map[string]string),
 	}
+	registerBuiltins(env)
+	return env
 }
 
 func NewEnclosedEnvironment(outer *Environment) *Environment {
@@ -113,7 +117,24 @@ func evalStatement(stmt ast.Statement, env *Environment) interface{} {
 	case *ast.VarStatement:
 		var val interface{}
 		if s.Value != nil {
-			val = evalExpression(s.Value, env)
+			// krama nums(5, 0) → []interface{}{0,0,0,0,0}
+			if s.TypeName == "krama" {
+				if call, ok := s.Value.(*ast.CallExpression); ok {
+					size := int(toInt64(evalExpression(call.Arguments[0], env)))
+					var fill interface{}
+					if len(call.Arguments) > 1 {
+						fill = evalExpression(call.Arguments[1], env)
+					}
+					arr := make([]interface{}, size)
+					for i := range arr {
+						arr[i] = fill
+					}
+					val = arr
+				}
+			}
+			if val == nil {
+				val = evalExpression(s.Value, env)
+			}
 		} else {
 			val = defaultValueForType(s.TypeName)
 		}
@@ -141,18 +162,32 @@ func evalStatement(stmt ast.Statement, env *Environment) interface{} {
 		}
 		fmt.Println(strings.Join(parts, " "))
 	case *ast.DiaStatement:
-		reader := bufio.NewReader(os.Stdin)
-		line, _ := reader.ReadString('\n')
-		line = strings.TrimSpace(line)
-		fields := strings.Fields(line)
+		var fields []string
+		if stdinScanner.Scan() {
+			fields = strings.Fields(stdinScanner.Text())
+		}
 		for i, name := range s.Targets {
+			typeName := env.GetType(name)
 			var val interface{} = ""
 			if i < len(fields) {
 				val = fields[i]
 			}
-			if env.GetType(name) == "sankhya" {
-				if parsed, err := strconv.ParseInt(val.(string), 10, 64); err == nil {
-					val = parsed
+			switch typeName {
+			case "sankhya":
+				if s, ok := val.(string); ok {
+					if parsed, err := strconv.ParseInt(s, 10, 64); err == nil {
+						val = parsed
+					}
+				}
+			case "dasmik":
+				if s, ok := val.(string); ok {
+					if parsed, err := strconv.ParseFloat(s, 64); err == nil {
+						val = parsed
+					}
+				}
+			case "akshara":
+				if s, ok := val.(string); ok && len(s) > 0 {
+					val = rune(s[0])
 				}
 			}
 			env.Set(name, val)
@@ -179,6 +214,7 @@ func evalStatement(stmt ast.Statement, env *Environment) interface{} {
 		start := toInt64(evalExpression(s.Start, env))
 		end := toInt64(evalExpression(s.End, env))
 		i := start
+		// Step is stored as varName+"++" or varName+"--"; suffix check is intentional.
 		increment := strings.HasSuffix(s.Step, "++")
 		for {
 			if increment {
@@ -243,8 +279,6 @@ func evalStatement(stmt ast.Statement, env *Environment) interface{} {
 		if panicked {
 			evalBlock(s.CatchBody, env)
 		}
-	case *ast.AnaaStatement:
-		// module imports not implemented yet
 	case *ast.ExpressionStatement:
 		evalExpression(s.Expression, env)
 	}
@@ -309,12 +343,19 @@ func evalExpression(expr ast.Expression, env *Environment) interface{} {
 		return evalCall(e, env)
 	case *ast.IndexExpression:
 		left := evalExpression(e.Left, env)
-		index := toInt64(evalExpression(e.Index, env))
-		arr, ok := left.([]interface{})
-		if !ok || index < 0 || int(index) >= len(arr) {
-			return nil
+		index := evalExpression(e.Index, env)
+		switch container := left.(type) {
+		case []interface{}:
+			i := toInt64(index)
+			if i < 0 || int(i) >= len(container) {
+				return nil
+			}
+			return container[i]
+		case map[string]interface{}:
+			key := fmt.Sprintf("%v", index)
+			return container[key]
 		}
-		return arr[index]
+		return nil
 	case *ast.TypeCastExpression:
 		return evalTypeCast(e, env)
 	}
@@ -370,6 +411,9 @@ func evalIntInfix(operator string, left, right int64) interface{} {
 	case "*":
 		return left * right
 	case "/":
+		if right == 0 {
+			panic("division by zero")
+		}
 		return left / right
 	case "**":
 		return int64(math.Pow(float64(left), float64(right)))
@@ -394,6 +438,9 @@ func evalFloatInfix(operator string, left, right float64) interface{} {
 	case "*":
 		return left * right
 	case "/":
+		if right == 0.0 {
+			return math.NaN()
+		}
 		return left / right
 	case "**":
 		return math.Pow(left, right)
@@ -410,10 +457,6 @@ func evalFloatInfix(operator string, left, right float64) interface{} {
 }
 
 func evalCall(expr *ast.CallExpression, env *Environment) interface{} {
-	if expr.Function == "lekha" {
-		return nil
-	}
-
 	val, ok := env.Get(expr.Function)
 	if !ok {
 		fmt.Printf("[OdLang Error] unknown function: %s\n", expr.Function)
@@ -496,6 +539,18 @@ func evalTypeCast(expr *ast.TypeCastExpression, env *Environment) interface{} {
 		}
 	case "satya":
 		return isTruthy(value)
+	case "akshara":
+		switch v := value.(type) {
+		case string:
+			if len(v) > 0 {
+				return rune(v[0])
+			}
+			return rune(0)
+		case int64:
+			return rune(v)
+		case rune:
+			return v
+		}
 	}
 	return value
 }
@@ -505,18 +560,24 @@ func assignIndex(left ast.Expression, value interface{}, env *Environment) {
 	if !ok {
 		return
 	}
-	arrVal := evalExpression(idx.Left, env)
-	arr, ok := arrVal.([]interface{})
-	if !ok {
-		return
-	}
-	index := toInt64(evalExpression(idx.Index, env))
-	if index < 0 || int(index) >= len(arr) {
-		return
-	}
-	arr[index] = value
-	if ident, ok := idx.Left.(*ast.Identifier); ok {
-		env.Set(ident.Name, arr)
+	container := evalExpression(idx.Left, env)
+	indexVal := evalExpression(idx.Index, env)
+	switch c := container.(type) {
+	case []interface{}:
+		i := toInt64(indexVal)
+		if i < 0 || int(i) >= len(c) {
+			return
+		}
+		c[i] = value
+		if ident, ok := idx.Left.(*ast.Identifier); ok {
+			env.Set(ident.Name, c)
+		}
+	case map[string]interface{}:
+		key := fmt.Sprintf("%v", indexVal)
+		c[key] = value
+		if ident, ok := idx.Left.(*ast.Identifier); ok {
+			env.Set(ident.Name, c)
+		}
 	}
 }
 
@@ -552,6 +613,8 @@ func defaultValueForType(typeName string) interface{} {
 		return false
 	case "krama":
 		return []interface{}{}
+	case "mana":
+		return map[string]interface{}{}
 	default:
 		return nil
 	}
@@ -599,6 +662,18 @@ func formatValue(value interface{}) string {
 			return "han"
 		}
 		return "na"
+	case []interface{}:
+		parts := make([]string, len(v))
+		for i, item := range v {
+			parts[i] = formatValue(item)
+		}
+		return "[" + strings.Join(parts, ", ") + "]"
+	case map[string]interface{}:
+		parts := []string{}
+		for k, item := range v {
+			parts = append(parts, k+": "+formatValue(item))
+		}
+		return "{" + strings.Join(parts, ", ") + "}"
 	default:
 		return fmt.Sprintf("%v", v)
 	}
