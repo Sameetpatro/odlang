@@ -73,6 +73,8 @@ func (parser *Parser) parseStatement() ast.Statement {
 		return parser.parseJetebeleJainStatement()
 	case token.KARYA:
 		return parser.parseKaryaStatement()
+	case token.SRENI:
+		return parser.parseSreniStatement()
 	case token.CHESTA:
 		return parser.parseChestaStatement()
 	case token.BAHARIPADE:
@@ -135,7 +137,7 @@ func (parser *Parser) peekError(tokenType token.TokenType) {
 func (parser *Parser) isStatementStart(tokenType token.TokenType) bool {
 	switch tokenType {
 	case token.LEKHA, token.DIA, token.DEIDE, token.JADI, token.GHURA, token.JETEBELEJAIN,
-		token.KARYA, token.CHESTA, token.BAHARIPADE, token.CHADIDE,
+		token.KARYA, token.SRENI, token.CHESTA, token.BAHARIPADE, token.CHADIDE,
 		token.CONST, token.ANAA, token.NUA, token.IDENT,
 		token.SANKHYA, token.SABDA, token.AKSHARA, token.DASMIC, token.SATYA,
 		token.KRAMA, token.MANA, token.THAKA, token.DHADHI:

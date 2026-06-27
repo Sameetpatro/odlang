@@ -166,6 +166,8 @@ func (lexer *Lexer) NextToken() token.Token {
 		tok = newToken(token.SLASH, lexer.currentChar)
 	case ',':
 		tok = newToken(token.COMMA, lexer.currentChar)
+	case '.':
+		tok = newToken(token.DOT, lexer.currentChar)
 	case '"':
 		tok = token.Token{Type: token.STRING, Literal: lexer.readString()}
 		return tok

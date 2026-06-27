@@ -112,6 +112,17 @@ type KaryaStatement struct {
 func (node *KaryaStatement) statementNode()       {}
 func (node *KaryaStatement) TokenLiteral() string { return "karya" }
 
+// SreniStatement defines a class with fields and methods.
+// Example: sreni Point { sankhya x ; karya sum() (sankhya) { ... } }
+type SreniStatement struct {
+	Name    string
+	Fields  []*VarStatement
+	Methods []*KaryaStatement
+}
+
+func (node *SreniStatement) statementNode()       {}
+func (node *SreniStatement) TokenLiteral() string { return "sreni" }
+
 // ChestaStatement runs code and catches errors in a dhare block.
 // Example: chesta { ... } dhare { ... } tries the first block, handles errors in the second
 type ChestaStatement struct {

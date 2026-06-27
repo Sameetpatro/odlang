@@ -82,9 +82,21 @@ type PrefixExpression struct {
 func (node *PrefixExpression) expressionNode()      {}
 func (node *PrefixExpression) TokenLiteral() string { return node.Operator }
 
-// CallExpression is a function call with a name and argument list.
+// MemberExpression reads a field from an object.
+// Example: p.x is MemberExpression{Object: p, Member: "x"}
+type MemberExpression struct {
+	Object Expression
+	Member string
+}
+
+func (node *MemberExpression) expressionNode()      {}
+func (node *MemberExpression) TokenLiteral() string { return node.Member }
+
+// CallExpression is a function or method call with a name and argument list.
 // Example: misana(p, q) is CallExpression{Function: "misana", Arguments: [...]}
+// Example: p.sum() sets Receiver to p and Function to "sum"
 type CallExpression struct {
+	Receiver  Expression
 	Function  string
 	Arguments []Expression
 }

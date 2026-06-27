@@ -54,6 +54,8 @@ func statementString(statement Statement) string {
 		return "chadide"
 	case *KaryaStatement:
 		return karyaString(node)
+	case *SreniStatement:
+		return fmt.Sprintf("sreni %s { %d fields, %d methods }", node.Name, len(node.Fields), len(node.Methods))
 	case *ChestaStatement:
 		return "chesta { ... } dhare { ... }"
 	case *AnaaStatement:
@@ -100,7 +102,12 @@ func expressionString(expression Expression) string {
 	case *PrefixExpression:
 		return fmt.Sprintf("(%s%s)", node.Operator, expressionString(node.Right))
 	case *CallExpression:
+		if node.Receiver != nil {
+			return fmt.Sprintf("%s.%s(%s)", expressionString(node.Receiver), node.Function, joinExpressions(node.Arguments))
+		}
 		return fmt.Sprintf("%s(%s)", node.Function, joinExpressions(node.Arguments))
+	case *MemberExpression:
+		return fmt.Sprintf("%s.%s", expressionString(node.Object), node.Member)
 	case *IndexExpression:
 		return fmt.Sprintf("%s[%s]", expressionString(node.Left), expressionString(node.Index))
 	case *TypeCastExpression:

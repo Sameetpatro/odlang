@@ -161,6 +161,42 @@ func (parser *Parser) parseReturnTypeList() []string {
 	return returnTypes
 }
 
+// parseSreniStatement reads a class with field and method declarations.
+// Example: sreni Point { sankhya x ; karya sum() (sankhya) { deide (x) ; } }
+func (parser *Parser) parseSreniStatement() *ast.SreniStatement {
+	statement := &ast.SreniStatement{}
+	parser.nextToken()
+	statement.Name = parser.currentToken.Literal
+	if !parser.expectPeek(token.LBRACE) {
+		return statement
+	}
+	parser.nextToken()
+	for parser.currentToken.Type != token.RBRACE && parser.currentToken.Type != token.EOF {
+		countBefore := parser.tokenCount
+		switch parser.currentToken.Type {
+		case token.KARYA:
+			statement.Methods = append(statement.Methods, parser.parseKaryaStatement())
+		case token.SANKHYA, token.SABDA, token.AKSHARA, token.DASMIC, token.SATYA,
+			token.KRAMA, token.MANA, token.THAKA, token.DHADHI:
+			statement.Fields = append(statement.Fields, parser.parseVarStatement(parser.currentToken.Literal, false))
+		default:
+			parser.errors = append(parser.errors,
+				"expected field or karya inside sreni, got "+string(parser.currentToken.Type))
+		}
+		parser.syncAfterBlockStatement()
+		if parser.tokenCount == countBefore &&
+			parser.currentToken.Type != token.EOF &&
+			parser.currentToken.Type != token.RBRACE &&
+			!parser.isStatementStart(parser.currentToken.Type) {
+			parser.nextToken()
+		}
+	}
+	if parser.currentToken.Type == token.RBRACE {
+		parser.nextToken()
+	}
+	return statement
+}
+
 // parseChestaStatement reads chesta { ... } dhare { ... }
 // Example: try/catch blocks map to TryBody and CatchBody statement lists
 func (parser *Parser) parseChestaStatement() *ast.ChestaStatement {

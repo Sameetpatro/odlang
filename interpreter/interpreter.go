@@ -79,6 +79,17 @@ type FunctionValue struct {
 	Closure     *Environment
 }
 
+type ClassValue struct {
+	Name    string
+	Fields  map[string]string
+	Methods map[string]*FunctionValue
+}
+
+type InstanceValue struct {
+	Class  *ClassValue
+	Fields map[string]interface{}
+}
+
 func Eval(program *ast.Program) {
 	env := NewEnvironment()
 	for _, stmt := range program.Statements {
@@ -139,7 +150,11 @@ func evalStatement(stmt ast.Statement, env *Environment) interface{} {
 			val = defaultValueForType(s.TypeName)
 		}
 		env.Set(s.Name, val)
-		env.SetType(s.Name, s.TypeName)
+		typeName := s.TypeName
+		if inst, ok := val.(*InstanceValue); ok {
+			typeName = inst.Class.Name
+		}
+		env.SetType(s.Name, typeName)
 	case *ast.AssignStatement:
 		val := evalExpression(s.Value, env)
 		if s.LeftHand != nil {
@@ -266,6 +281,25 @@ func evalStatement(stmt ast.Statement, env *Environment) interface{} {
 			Body:        s.Body,
 			Closure:     env,
 		})
+	case *ast.SreniStatement:
+		fieldTypes := make(map[string]string)
+		for _, field := range s.Fields {
+			fieldTypes[field.Name] = field.TypeName
+		}
+		methods := make(map[string]*FunctionValue)
+		for _, method := range s.Methods {
+			methods[method.Name] = &FunctionValue{
+				Parameters:  method.Parameters,
+				ReturnTypes: method.ReturnTypes,
+				Body:        method.Body,
+				Closure:     env,
+			}
+		}
+		env.Set(s.Name, &ClassValue{
+			Name:    s.Name,
+			Fields:  fieldTypes,
+			Methods: methods,
+		})
 	case *ast.ChestaStatement:
 		panicked := false
 		func() {
@@ -343,6 +377,8 @@ func evalExpression(expr ast.Expression, env *Environment) interface{} {
 		return evalInfix(e.Operator, left, right)
 	case *ast.CallExpression:
 		return evalCall(e, env)
+	case *ast.MemberExpression:
+		return evalMember(e, env)
 	case *ast.IndexExpression:
 		left := evalExpression(e.Left, env)
 		index := evalExpression(e.Index, env)
@@ -459,10 +495,18 @@ func evalFloatInfix(operator string, left, right float64) interface{} {
 }
 
 func evalCall(expr *ast.CallExpression, env *Environment) interface{} {
+	if expr.Receiver != nil {
+		return evalMethodCall(expr, env)
+	}
+
 	val, ok := env.Get(expr.Function)
 	if !ok {
 		fmt.Printf("[OdLang Error] unknown function: %s\n", expr.Function)
 		return nil
+	}
+
+	if class, ok := val.(*ClassValue); ok {
+		return newInstance(class)
 	}
 
 	fn, ok := val.(*FunctionValue)
@@ -476,6 +520,95 @@ func evalCall(expr *ast.CallExpression, env *Environment) interface{} {
 		args = append(args, evalExpression(arg, env))
 	}
 	return evalCallFunction(fn, args)
+}
+
+func evalMethodCall(expr *ast.CallExpression, env *Environment) interface{} {
+	receiver := evalExpression(expr.Receiver, env)
+	inst, ok := receiver.(*InstanceValue)
+	if !ok {
+		fmt.Printf("[OdLang Error] %s is not an object\n", expr.Function)
+		return nil
+	}
+
+	method, ok := inst.Class.Methods[expr.Function]
+	if !ok {
+		fmt.Printf("[OdLang Error] unknown method: %s\n", expr.Function)
+		return nil
+	}
+
+	args := make([]interface{}, 0, len(expr.Arguments))
+	for _, arg := range expr.Arguments {
+		args = append(args, evalExpression(arg, env))
+	}
+	return evalMethodFunction(inst, method, args)
+}
+
+func evalMember(expr *ast.MemberExpression, env *Environment) interface{} {
+	object := evalExpression(expr.Object, env)
+	inst, ok := object.(*InstanceValue)
+	if !ok {
+		fmt.Printf("[OdLang Error] cannot read field %s on non-object\n", expr.Member)
+		return nil
+	}
+	val, ok := inst.Fields[expr.Member]
+	if !ok {
+		fmt.Printf("[OdLang Error] unknown field: %s\n", expr.Member)
+		return nil
+	}
+	return val
+}
+
+func newInstance(class *ClassValue) *InstanceValue {
+	inst := &InstanceValue{
+		Class:  class,
+		Fields: make(map[string]interface{}),
+	}
+	for name, typeName := range class.Fields {
+		inst.Fields[name] = defaultValueForType(typeName)
+	}
+	return inst
+}
+
+func evalMethodFunction(inst *InstanceValue, fn *FunctionValue, args []interface{}) interface{} {
+	callEnv := NewEnclosedEnvironment(fn.Closure)
+	for name, typeName := range inst.Class.Fields {
+		callEnv.Set(name, inst.Fields[name])
+		callEnv.SetType(name, typeName)
+	}
+	for i, param := range fn.Parameters {
+		var arg interface{}
+		if i < len(args) {
+			arg = args[i]
+		}
+		callEnv.Set(param.Name, arg)
+		callEnv.SetType(param.Name, param.TypeName)
+	}
+
+	var returnValues []interface{}
+	for _, stmt := range fn.Body {
+		result := evalStatement(stmt, callEnv)
+		if sig, ok := result.(returnSignal); ok {
+			returnValues = sig.values
+			break
+		}
+	}
+
+	for name := range inst.Class.Fields {
+		if val, ok := callEnv.Get(name); ok {
+			inst.Fields[name] = val
+		}
+	}
+
+	if len(fn.ReturnTypes) == 0 {
+		return nil
+	}
+	if len(fn.ReturnTypes) == 1 {
+		if len(returnValues) > 0 {
+			return returnValues[0]
+		}
+		return nil
+	}
+	return returnValues
 }
 
 func evalCallFunction(fn *FunctionValue, args []interface{}) interface{} {

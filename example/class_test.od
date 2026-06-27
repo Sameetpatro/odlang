@@ -1,0 +1,67 @@
+sreni Point {
+    sankhya x ;
+    sankhya y ;
+
+    karya init(ax sankhya, ay sankhya) () {
+        x = ax ;
+        y = ay ;
+    }
+
+    karya sum() (sankhya) {
+        deide (x + y) ;
+    }
+
+    karya describe() (sabda) {
+        deide ("(" + sabda(x) + ", " + sabda(y) + ")") ;
+    }
+}
+
+sreni BankAccount {
+    sabda owner ;
+    sankhya balance ;
+
+    karya init(naam sabda, rashi sankhya) () {
+        owner = naam ;
+        balance = rashi ;
+    }
+
+    karya deposit(rashi sankhya) () {
+        balance = balance + rashi ;
+    }
+
+    karya withdraw(rashi sankhya) (satya) {
+        jadi rashi <= balance {
+            balance = balance - rashi ;
+            deide (han) ;
+        }
+        deide (na) ;
+    }
+
+    karya summary() (sabda) {
+        deide (owner + " has " + sabda(balance)) ;
+    }
+}
+
+karya aarambha() {
+    lekha("=== OdLang Class & Method Test ===") ;
+
+    nua p = Point() ;
+    p.init(3, 4) ;
+    lekha("point: " + p.describe()) ;
+    lekha("sum = " + sabda(p.sum())) ;
+
+    nua acct = BankAccount() ;
+    acct.init("Sameet", 1000) ;
+    acct.deposit(250) ;
+    lekha(acct.summary()) ;
+
+    satya ok = acct.withdraw(200) ;
+    lekha("withdraw 200 ok? " + sabda(ok)) ;
+    lekha(acct.summary()) ;
+
+    satya fail = acct.withdraw(9999) ;
+    lekha("withdraw 9999 ok? " + sabda(fail)) ;
+    lekha(acct.summary()) ;
+
+    lekha("=== done ===") ;
+}

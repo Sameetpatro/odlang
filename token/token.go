@@ -128,6 +128,10 @@ const (
 	// Example: misana(a, b) uses COMMA between arguments
 	COMMA = "COMMA"
 
+	// DOT accesses a field or method on an object.
+	// Example: p.x and p.sum() use DOT after the object name
+	DOT = "DOT"
+
 	// ARROW is the range operator used in ghura loops.
 	// Example: ghura sankhya i = 0 -> 5 uses ARROW between start and end
 	ARROW = "ARROW"

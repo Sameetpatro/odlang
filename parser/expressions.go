@@ -38,6 +38,7 @@ var precedences = map[token.TokenType]int{
 	token.EXP:      powerPrecedence,
 	token.LPAREN:   callPrecedence,
 	token.LBRACK:   callPrecedence,
+	token.DOT:      callPrecedence,
 }
 
 // parseExpression reads one expression with operators at or above the given precedence.
@@ -186,11 +187,21 @@ func (parser *Parser) parseTypeCastExpression() ast.Expression {
 func (parser *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	switch parser.currentToken.Type {
 	case token.LPAREN:
+		if member, ok := left.(*ast.MemberExpression); ok {
+			call := &ast.CallExpression{Receiver: member.Object, Function: member.Member}
+			call.Arguments = parser.parseExpressionList(token.RPAREN)
+			return call
+		}
 		if ident, ok := left.(*ast.Identifier); ok {
 			expression := &ast.CallExpression{Function: ident.Name}
 			expression.Arguments = parser.parseExpressionList(token.RPAREN)
 			return expression
 		}
+	case token.DOT:
+		member := &ast.MemberExpression{Object: left}
+		parser.nextToken()
+		member.Member = parser.currentToken.Literal
+		return member
 	case token.LBRACK:
 		return parser.parseIndexExpression(left)
 	case token.EXP:
