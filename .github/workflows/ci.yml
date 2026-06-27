@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: ["*"]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Build
+        run: go build ./...
+
+      - name: Test
+        run: go test ./...
+
+      - name: Build binary (unix)
+        if: runner.os != 'Windows'
+        run: go build -o od ./cmd/od
+
+      - name: Build binary (windows)
+        if: runner.os == 'Windows'
+        run: go build -o od.exe ./cmd/od
+
+      - name: Smoke test (unix)
+        if: runner.os != 'Windows'
+        run: echo "40 60" | ./od run example/lexer_test.od
+
+      - name: Smoke test (windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: echo "40 60" | .\od.exe run example\lexer_test.od

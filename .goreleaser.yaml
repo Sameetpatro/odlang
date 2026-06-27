@@ -1,0 +1,76 @@
+version: 2
+
+project_name: odlang
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: od
+    main: ./cmd/od
+    binary: od
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+
+archives:
+  - id: od
+    builds: [od]
+    name_template: "od_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+release:
+  github:
+    owner: Sameetpatro
+    name: odlang
+  name_template: "OdLang {{.Version}}"
+  draft: false
+  prerelease: auto
+  extra_files:
+    - glob: ./bucket/odlang.json
+
+scoops:
+  - name: odlang
+    repository:
+      owner: Sameetpatro
+      name: scoop-odlang
+    directory: bucket
+    homepage: "https://github.com/Sameetpatro/odlang"
+    description: "OdLang — a programming language with Odia-inspired keywords"
+    license: MIT
+    url_template: "https://github.com/Sameetpatro/odlang/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+
+brews:
+  - name: odlang
+    repository:
+      owner: Sameetpatro
+      name: homebrew-odlang
+    directory: Formula
+    homepage: "https://github.com/Sameetpatro/odlang"
+    description: "OdLang — a programming language with Odia-inspired keywords"
+    license: MIT
+    install: |
+      bin.install "od"
+    test: |
+      system "#{bin}/od", "version"
