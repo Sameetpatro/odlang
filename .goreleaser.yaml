@@ -26,12 +26,13 @@ builds:
       - -s -w -X main.version={{.Version}}
 
 archives:
-  - id: od
-    builds: [od]
-    name_template: "od_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+  - name_template: "od_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    formats:
+      - tar.gz
     format_overrides:
       - goos: windows
-        format: zip
+        formats:
+          - zip
     files:
       - README.md
       - LICENSE
@@ -47,8 +48,19 @@ release:
   name_template: "OdLang {{.Version}}"
   draft: false
   prerelease: auto
-  extra_files:
-    - glob: ./bucket/odlang.json
+
+homebrew_casks:
+  - name: odlang
+    repository:
+      owner: Sameetpatro
+      name: homebrew-odlang
+    directory: Formula
+    homepage: "https://github.com/Sameetpatro/odlang"
+    description: "OdLang — a programming language with Odia-inspired keywords"
+    license: MIT
+    binary: od
+    conflicts:
+      - formula: odlang
 
 scoops:
   - name: odlang
@@ -59,18 +71,3 @@ scoops:
     homepage: "https://github.com/Sameetpatro/odlang"
     description: "OdLang — a programming language with Odia-inspired keywords"
     license: MIT
-    url_template: "https://github.com/Sameetpatro/odlang/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-
-brews:
-  - name: odlang
-    repository:
-      owner: Sameetpatro
-      name: homebrew-odlang
-    directory: Formula
-    homepage: "https://github.com/Sameetpatro/odlang"
-    description: "OdLang — a programming language with Odia-inspired keywords"
-    license: MIT
-    install: |
-      bin.install "od"
-    test: |
-      system "#{bin}/od", "version"
