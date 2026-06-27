@@ -50,7 +50,7 @@ func (parser *Parser) parseElseParts(statement *ast.IfStatement) {
 	}
 }
 
-// parseGhuraStatement reads ghura sankhya i = 0 -> 5 | i++ { ... }
+// parseGhuraStatement reads ghura sankhya i = 0 -> 5 ; i++ { ... }
 // Example: ghura loop with i++ stores Step as "++" after the variable name
 func (parser *Parser) parseGhuraStatement() *ast.GhuraStatement {
 	statement := &ast.GhuraStatement{}
@@ -68,10 +68,10 @@ func (parser *Parser) parseGhuraStatement() *ast.GhuraStatement {
 	}
 	parser.nextToken()
 	statement.End = parser.parseExpression(lowestPrecedence)
-	if parser.peekToken.Type == token.PIPE {
+	if parser.peekToken.Type == token.SEMI {
 		parser.nextToken()
 		parser.nextToken()
-	} else if parser.currentToken.Type == token.PIPE {
+	} else if parser.currentToken.Type == token.SEMI {
 		parser.nextToken()
 	}
 	stepName := parser.currentToken.Literal

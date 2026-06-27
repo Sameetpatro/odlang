@@ -11,7 +11,7 @@ import (
 )
 
 func TestMinimalDeide(t *testing.T) {
-	source := "karya f() () { deide (1) | }\n"
+	source := "karya f() () { deide (1) ; }\n"
 	lexerInstance := lexer.New(source)
 	parserInstance := parser.New(lexerInstance)
 	program := parserInstance.ParseProgram()
@@ -24,7 +24,7 @@ func TestMinimalDeide(t *testing.T) {
 }
 
 func TestDeideCommaList(t *testing.T) {
-	source := "karya m() () {\n    deide (pratham + dutiya, pratham, dutiya) |\n}\n"
+	source := "karya m() () {\n    deide (pratham + dutiya, pratham, dutiya) ;\n}\n"
 	lexerInstance := lexer.New(source)
 	parserInstance := parser.New(lexerInstance)
 	program := parserInstance.ParseProgram()
@@ -38,7 +38,7 @@ func TestDeideCommaList(t *testing.T) {
 
 func TestMisanaParse(t *testing.T) {
 	source := `karya misana (pratham sankhya, dutiya sankhya) (sankhya, sankhya, sankhya) {
-    deide (pratham + dutiya, pratham, dutiya) |
+    deide (pratham + dutiya, pratham, dutiya) ;
 }`
 	lexerInstance := lexer.New(source)
 	parserInstance := parser.New(lexerInstance)
@@ -81,16 +81,16 @@ func TestMisanaParse(t *testing.T) {
 func TestGhuraChadideParse(t *testing.T) {
 	cases := map[string]string{
 		"simple ghura": `karya f() () {
-    ghura sankhya i = 0 -> 5 | i++ {
-        lekha("loop") |
+    ghura sankhya i = 0 -> 5 ; i++ {
+        lekha("loop") ;
     }
 }`,
 		"ghura with jadi/chadide": `karya f() () {
-    ghura sankhya i = 0 -> 5 | i++ {
+    ghura sankhya i = 0 -> 5 ; i++ {
         jadi i == 3 {
-            chadide |
-        } |
-        lekha("loop") |
+            chadide ;
+        } ;
+        lekha("loop") ;
     }
 }`,
 	}
@@ -110,36 +110,36 @@ func TestGhuraChadideParse(t *testing.T) {
 
 func TestParseLexerTestTail(t *testing.T) {
 	source := `karya aarambha() () {
-    sankhya x = 10 |
+    sankhya x = 10 ;
     jetebeleJain x > 0 {
-        lekha("countdown: " + sabda(x)) |
-        x = x - 1 |
+        lekha("countdown: " + sabda(x)) ;
+        x = x - 1 ;
         jadi x == 5 {
-            baharipade |
-        } |
+            baharipade ;
+        } ;
     }
 
-    dasmik ratio = PI / 2.0 |
-    akshara mark = '!' |
-    nua extra = khali |
-    lekha("ratio = " + sabda(ratio) + " mark = " + sabda(mark) + " extra = " + sabda(extra)) |
+    dasmik ratio = PI / 2.0 ;
+    akshara mark = '!' ;
+    nua extra = khali ;
+    lekha("ratio = " + sabda(ratio) + " mark = " + sabda(mark) + " extra = " + sabda(extra)) ;
 
-    krama nums(5, 0) |
-    nums[0] = 1 |
-    nums[1] = 2 |
-    lekha("first cell: " + sabda(nums[0]) + " power: " + sabda(2**3)) |
+    krama nums(5, 0) ;
+    nums[0] = 1 ;
+    nums[1] = 2 ;
+    lekha("first cell: " + sabda(nums[0]) + " power: " + sabda(2**3)) ;
 
-    sabda casted = sabda(s) |
-    lekha("casted sum: " + casted) |
+    sabda casted = sabda(s) ;
+    lekha("casted sum: " + casted) ;
 
     chesta {
-        lekha("try block ok") |
-        sankhya bad = 10 / 0 |
+        lekha("try block ok") ;
+        sankhya bad = 10 / 0 ;
     } dhare {
-        lekha("catch block ran") |
+        lekha("catch block ran") ;
     }
 
-    lekha("=== done ===") |
+    lekha("=== done ===") ;
 }
 `
 	done := make(chan struct{}, 1)

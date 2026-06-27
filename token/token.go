@@ -64,9 +64,9 @@ const (
 	// Example: arr[0] uses RBRACK
 	RBRACK = "RBRACK"
 
-	// PIPE is the line end symbol |
-	// Example: lekha(x) | ends the line with PIPE
-	PIPE = "PIPE"
+	// SEMI is the statement terminator ;
+	// Example: lekha(x) ; ends the line with SEMI
+	SEMI = "SEMI"
 
 	// BANG is the not operator !
 	// Example: !han means not true
@@ -133,7 +133,7 @@ const (
 	ARROW = "ARROW"
 
 	// INCREMENT adds one to a loop variable after each step.
-	// Example: i++ after ghura ... | i++ { increases i by 1
+	// Example: i++ after ghura ... ; i++ { increases i by 1
 	INCREMENT = "INCREMENT"
 
 	// DECREMENT subtracts one from a variable after each step.

@@ -140,8 +140,8 @@ func (lexer *Lexer) NextToken() token.Token {
 		tok = newToken(token.LBRACK, lexer.currentChar)
 	case ']':
 		tok = newToken(token.RBRACK, lexer.currentChar)
-	case '|':
-		tok = newToken(token.PIPE, lexer.currentChar)
+	case ';':
+		tok = newToken(token.SEMI, lexer.currentChar)
 	case '+':
 		if lexer.peekChar() == '+' {
 			ch := lexer.currentChar

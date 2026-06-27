@@ -127,7 +127,7 @@ func (parser *Parser) peekError(tokenType token.TokenType) {
 }
 
 // isStatementStart checks if the current token can begin a new line of code.
-// Example: KARYA and lekha can start statements, but PIPE cannot
+// Example: KARYA and lekha can start statements, but SEMI cannot
 func (parser *Parser) isStatementStart(tokenType token.TokenType) bool {
 	switch tokenType {
 	case token.LEKHA, token.DIA, token.DEIDE, token.JADI, token.GHURA, token.JETEBELEJAIN,
@@ -144,7 +144,7 @@ func (parser *Parser) isStatementStart(tokenType token.TokenType) bool {
 // syncAfterTopLevelStatement moves past a line end at the top level of a file.
 // Example: after karya f() { } the next token is KARYA and must not be skipped
 func (parser *Parser) syncAfterTopLevelStatement() {
-	if parser.peekToken.Type == token.PIPE || parser.currentToken.Type == token.PIPE {
+	if parser.peekToken.Type == token.SEMI || parser.currentToken.Type == token.SEMI {
 		parser.consumeStatementEnd()
 		return
 	}
@@ -171,10 +171,10 @@ func (parser *Parser) syncAfterBlockStatement() {
 // consumeStatementEnd moves past the | at the end of a line when it is present.
 // Example: after lekha("hi") the parser stops on ")" and this moves past "|"
 func (parser *Parser) consumeStatementEnd() {
-	if parser.peekToken.Type == token.PIPE {
+	if parser.peekToken.Type == token.SEMI {
 		parser.nextToken()
 	}
-	if parser.currentToken.Type == token.PIPE {
+	if parser.currentToken.Type == token.SEMI {
 		parser.nextToken()
 	}
 }
