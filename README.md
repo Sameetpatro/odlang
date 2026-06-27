@@ -27,6 +27,14 @@ echo "40 60" | ./od run example/lexer_test.od
 ./od repl
 ```
 
+## Investigation Suite
+
+```bash
+./od investigate
+```
+
+An interactive, cinematic terminal experience. Identity verification required.
+
 ## Examples
 
 | File | What it covers |

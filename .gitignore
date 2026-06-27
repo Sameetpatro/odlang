@@ -1,0 +1,39 @@
+# Built binary
+/od
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go test & coverage
+*.test
+*.out
+coverage.html
+coverage.txt
+
+# Go workspace
+go.work
+go.work.sum
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE / editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Env & secrets (never commit)
+.env
+.env.*
+*.pem
+*.key
+
+# Debug / temp
+*.log
+tmp/
+dist/

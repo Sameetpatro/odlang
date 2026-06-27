@@ -8,6 +8,7 @@ import (
 
 	"github.com/Sameetpatro/odlang/ast"
 	"github.com/Sameetpatro/odlang/interpreter"
+	"github.com/Sameetpatro/odlang/investigate"
 	"github.com/Sameetpatro/odlang/lexer"
 	"github.com/Sameetpatro/odlang/parser"
 )
@@ -23,6 +24,8 @@ func main() {
 		runFile()
 	case "repl":
 		runREPL()
+	case "investigate":
+		investigate.Run()
 	case "version":
 		fmt.Println("OdLang v1.0.0")
 	case "help":
@@ -122,6 +125,7 @@ func printHelp() {
 	fmt.Println("Usage:")
 	fmt.Println("  od run <file.od>   Run an OdLang program")
 	fmt.Println("  od repl            Start interactive REPL")
+	fmt.Println("  od investigate     Personal investigation suite")
 	fmt.Println("  od version         Show version")
 	fmt.Println("  od help            Show this help")
 }
