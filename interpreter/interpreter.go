@@ -279,6 +279,8 @@ func evalStatement(stmt ast.Statement, env *Environment) interface{} {
 		if panicked {
 			evalBlock(s.CatchBody, env)
 		}
+	case *ast.AnaaStatement:
+		// module imports not implemented yet
 	case *ast.ExpressionStatement:
 		evalExpression(s.Expression, env)
 	}

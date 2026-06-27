@@ -15,6 +15,7 @@ type Parser struct {
 	currentToken  token.Token
 	peekToken     token.Token
 	errors        []string
+	tokenCount    int
 }
 
 // New creates a parser and loads the first two tokens for lookahead.
@@ -31,6 +32,7 @@ func New(lexerInstance *lexer.Lexer) *Parser {
 func (parser *Parser) nextToken() {
 	parser.currentToken = parser.peekToken
 	parser.peekToken = parser.lexerInstance.NextToken()
+	parser.tokenCount++
 }
 
 // Errors returns all parse error messages collected so far.
@@ -79,6 +81,8 @@ func (parser *Parser) parseStatement() ast.Statement {
 		return parser.parseChadideStatement()
 	case token.CONST:
 		return parser.parseConstStatement()
+	case token.ANAA:
+		return parser.parseAnaaStatement()
 	case token.NUA:
 		return parser.parseVarStatement("", false)
 	case token.SANKHYA, token.SABDA, token.AKSHARA, token.DASMIC, token.SATYA,
@@ -132,7 +136,7 @@ func (parser *Parser) isStatementStart(tokenType token.TokenType) bool {
 	switch tokenType {
 	case token.LEKHA, token.DIA, token.DEIDE, token.JADI, token.GHURA, token.JETEBELEJAIN,
 		token.KARYA, token.CHESTA, token.BAHARIPADE, token.CHADIDE,
-		token.CONST, token.NUA, token.IDENT,
+		token.CONST, token.ANAA, token.NUA, token.IDENT,
 		token.SANKHYA, token.SABDA, token.AKSHARA, token.DASMIC, token.SATYA,
 		token.KRAMA, token.MANA, token.THAKA, token.DHADHI:
 		return true
@@ -165,6 +169,9 @@ func (parser *Parser) syncAfterBlockStatement() {
 	if parser.currentToken.Type == token.EOF || parser.currentToken.Type == token.RBRACE {
 		return
 	}
+	if parser.isStatementStart(parser.currentToken.Type) {
+		return
+	}
 	parser.nextToken()
 }
 
@@ -184,15 +191,16 @@ func (parser *Parser) consumeStatementEnd() {
 func (parser *Parser) parseBlock() []ast.Statement {
 	var statements []ast.Statement
 	for parser.currentToken.Type != token.RBRACE && parser.currentToken.Type != token.EOF {
-		tokenBefore := parser.currentToken
+		countBefore := parser.tokenCount
 		statement := parser.parseStatement()
 		if statement != nil {
 			statements = append(statements, statement)
 		}
 		parser.syncAfterBlockStatement()
-		if parser.currentToken == tokenBefore &&
+		if parser.tokenCount == countBefore &&
 			parser.currentToken.Type != token.EOF &&
-			parser.currentToken.Type != token.RBRACE {
+			parser.currentToken.Type != token.RBRACE &&
+			!parser.isStatementStart(parser.currentToken.Type) {
 			parser.nextToken()
 		}
 	}

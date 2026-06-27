@@ -157,6 +157,7 @@ func (parser *Parser) parseIdentifierExpression() ast.Expression {
 		return parser.parseCallExpression(name)
 	}
 	if parser.peekToken.Type == token.LBRACK {
+		parser.nextToken()
 		return parser.parseIndexExpression(&ast.Identifier{Name: name})
 	}
 	return &ast.Identifier{Name: name}
@@ -186,7 +187,9 @@ func (parser *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	switch parser.currentToken.Type {
 	case token.LPAREN:
 		if ident, ok := left.(*ast.Identifier); ok {
-			return parser.parseCallExpression(ident.Name)
+			expression := &ast.CallExpression{Function: ident.Name}
+			expression.Arguments = parser.parseExpressionList(token.RPAREN)
+			return expression
 		}
 	case token.LBRACK:
 		return parser.parseIndexExpression(left)
@@ -225,12 +228,15 @@ func (parser *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
 		return expression
 	}
 	if parser.peekToken.Type == token.LBRACK {
+		parser.nextToken()
 		return parser.parseIndexExpression(expression)
 	}
 	if parser.peekToken.Type == token.LPAREN {
 		if ident, ok := expression.Left.(*ast.Identifier); ok {
+			call := &ast.CallExpression{Function: ident.Name}
 			parser.nextToken()
-			return parser.parseCallExpression(ident.Name)
+			call.Arguments = parser.parseExpressionList(token.RPAREN)
+			return call
 		}
 	}
 	return expression

@@ -101,7 +101,9 @@ func (parser *Parser) parseKaryaStatement() *ast.KaryaStatement {
 	parser.nextToken()
 	statement.Name = parser.currentToken.Literal
 	statement.Parameters = parser.parseParameterList()
-	statement.ReturnTypes = parser.parseReturnTypeList()
+	if parser.peekToken.Type == token.LPAREN {
+		statement.ReturnTypes = parser.parseReturnTypeList()
+	}
 	statement.Body = parser.parseBlockBody()
 	return statement
 }
