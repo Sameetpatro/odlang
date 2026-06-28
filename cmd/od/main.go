@@ -37,7 +37,7 @@ func main() {
 
 func runFile() {
 	if len(os.Args) < 3 {
-		fmt.Println("Usage: od exec <file.od>")
+		fmt.Println("Usage: odlang exec <file.od>")
 		os.Exit(1)
 	}
 
@@ -123,8 +123,8 @@ func printHelp() {
 	fmt.Println("OdLang — tree-walk interpreter")
 	fmt.Println()
 	fmt.Println("Usage:")
-	fmt.Println("  od exec <file.od>   Run an OdLang program")
-	fmt.Println("  od repl            Start interactive REPL")
-	fmt.Println("  od version         Show version")
-	fmt.Println("  od help            Show this help")
+	fmt.Println("  odlang exec <file.od>   Run an OdLang program")
+	fmt.Println("  odlang repl            Start interactive REPL")
+	fmt.Println("  odlang version         Show version")
+	fmt.Println("  odlang help            Show this help")
 }
