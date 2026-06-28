@@ -54,6 +54,7 @@ homebrew_casks:
     repository:
       owner: Sameetpatro
       name: homebrew-odlang
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     directory: Formula
     homepage: "https://github.com/Sameetpatro/odlang"
     description: "OdLang — a programming language with Odia-inspired keywords"
@@ -67,6 +68,7 @@ scoops:
     repository:
       owner: Sameetpatro
       name: scoop-odlang
+      token: "{{ .Env.SCOOP_BUCKET_GITHUB_TOKEN }}"
     directory: bucket
     homepage: "https://github.com/Sameetpatro/odlang"
     description: "OdLang — a programming language with Odia-inspired keywords"
