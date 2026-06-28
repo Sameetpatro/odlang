@@ -65,3 +65,12 @@ brews:
       system "#{bin}/odlang", "version"
 
 scoops:
+  - name: odlang
+    repository:
+      owner: Sameetpatro
+      name: scoop-odlang
+      token: "{{ .Env.SCOOP_BUCKET_GITHUB_TOKEN }}"
+    directory: bucket
+    homepage: "https://github.com/Sameetpatro/odlang"
+    description: "OdLang — a programming language with Odia-inspired keywords"
+    license: MIT
