@@ -49,7 +49,7 @@ release:
   draft: false
   prerelease: auto
 
-homebrew_casks:
+brews:
   - name: odlang
     repository:
       owner: Sameetpatro
@@ -59,17 +59,9 @@ homebrew_casks:
     homepage: "https://github.com/Sameetpatro/odlang"
     description: "OdLang — a programming language with Odia-inspired keywords"
     license: MIT
-    binary: od
-    conflicts:
-      - formula: odlang
+    install: |
+      bin.install "od"
+    test: |
+      system "#{bin}/od", "version"
 
 scoops:
-  - name: odlang
-    repository:
-      owner: Sameetpatro
-      name: scoop-odlang
-      token: "{{ .Env.SCOOP_BUCKET_GITHUB_TOKEN }}"
-    directory: bucket
-    homepage: "https://github.com/Sameetpatro/odlang"
-    description: "OdLang — a programming language with Odia-inspired keywords"
-    license: MIT
